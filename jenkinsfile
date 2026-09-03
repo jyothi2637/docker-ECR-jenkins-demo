@@ -1,0 +1,71 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = 'ap-south-1'
+        AWS_ACCOUNT_ID = '820329009041'
+        ECR_REPO = 'demo-nginx'
+        IMAGE_TAG = 'latest'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/<username>/docker-ecr-jenkins-demo.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t demo-nginx .'
+            }
+        }
+
+        stage('Login to ECR') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-ecr']]) {
+
+                    sh '''
+                    aws ecr get-login-password \
+                    --region $AWS_REGION | \
+                    docker login \
+                    --username AWS \
+                    --password-stdin \
+                    $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+                    '''
+                }
+            }
+        }
+
+        stage('Tag Image') {
+            steps {
+                sh '''
+                docker tag demo-nginx:latest \
+                $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
+                '''
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                sh '''
+                docker push \
+                $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Docker Image Successfully Pushed to ECR'
+        }
+
+        failure {
+            echo 'Pipeline Failed'
+        }
+    }
+}
