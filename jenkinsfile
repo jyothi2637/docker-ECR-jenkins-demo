@@ -13,7 +13,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                url: 'https://github.com/<username>/docker-ecr-jenkins-demo.git'
+                url: git 'https://github.com/jyothi2637/docker-ECR-jenkins-demo.git'
             }
         }
 
@@ -34,7 +34,7 @@ pipeline {
                     docker login \
                     --username AWS \
                     --password-stdin \
-                    $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+                    $820329009041.dkr.ecr.$AWS_REGION.amazonaws.com
                     '''
                 }
             }
@@ -44,7 +44,7 @@ pipeline {
             steps {
                 sh '''
                 docker tag demo-nginx:latest \
-                $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
+                $820329009041.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
                 '''
             }
         }
@@ -53,7 +53,7 @@ pipeline {
             steps {
                 sh '''
                 docker push \
-                $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
+                $820329009041.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
                 '''
             }
         }
