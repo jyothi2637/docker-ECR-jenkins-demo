@@ -1,3 +1,4 @@
+```groovy
 pipeline {
     agent any
 
@@ -11,9 +12,9 @@ pipeline {
     stages {
 
         stage('Checkout') {
-            
+            steps {
                 git branch: 'main',
-                url: git 'https://github.com/jyothi2637/docker-ECR-jenkins-demo.git'
+                    url: 'https://github.com/jyothi2637/docker-ECR-jenkins-demo.git'
             }
         }
 
@@ -26,15 +27,15 @@ pipeline {
         stage('Login to ECR') {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
-                credentialsId: 'aws-ecr']]) {
+                    credentialsId: 'aws-ecr']]) {
 
                     sh '''
                     aws ecr get-login-password \
-                    --region $AWS_REGION | \
+                    --region ${AWS_REGION} | \
                     docker login \
                     --username AWS \
                     --password-stdin \
-                    $820329009041.dkr.ecr.$AWS_REGION.amazonaws.com
+                    ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
                     '''
                 }
             }
@@ -44,7 +45,7 @@ pipeline {
             steps {
                 sh '''
                 docker tag demo-nginx:latest \
-                $820329009041.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
+                ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
                 '''
             }
         }
@@ -53,7 +54,7 @@ pipeline {
             steps {
                 sh '''
                 docker push \
-                $820329009041.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
+                ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
                 '''
             }
         }
@@ -69,3 +70,4 @@ pipeline {
         }
     }
 }
+```
